@@ -1,0 +1,2 @@
+# LocalKeyStore
+对于高版本Android使用安全性更高的AndroidKeyStore保存本地密钥兼容至Andorid4.0
