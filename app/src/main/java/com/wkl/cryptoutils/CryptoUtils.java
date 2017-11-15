@@ -5,7 +5,6 @@ import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -71,7 +70,7 @@ public class CryptoUtils {
 
     private static void initKey(KeyStore keyStore, File file) throws Exception {
         if (!keyStore.containsAlias(DEFAULT_SECRETKEY_NAME)) { // 秘钥不存在，则生成秘钥
-            Log.e("TAG", "生成了密钥");
+//            Log.e("TAG", "生成了密钥");
             KeyGenerator keyGenerator = generateKeyGenerator();
             SecretKey secretKey = keyGenerator.generateKey();
 
