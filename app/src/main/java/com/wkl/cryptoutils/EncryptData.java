@@ -13,6 +13,7 @@ import java.io.Serializable;
 
 public class EncryptData implements Serializable, Parcelable {
 
+    private static final long serialVersionUID = 6325772086960229602L;
     /**
      * 别名，用于保存，查找
      */
