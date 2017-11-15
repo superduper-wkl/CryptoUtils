@@ -41,10 +41,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CryptoUtils crypto = CryptoUtils.getInstance(this);
-        String encryptStr = crypto.aesEncrypt(str);
-        String decryptStr = crypto.aesDecrypt(encryptStr);
+        EncryptData encryptData = crypto.aesEncrypt("测试", str);
+        String decryptStr = crypto.aesDecrypt(encryptData);
 
-        mTv2.setText(encryptStr);
+        // 保存加密后的信息
+//        SharedPreferencesUtils.save(this, encryptData.getAlias(), encryptData);
+        // 获取加密后的信息
+//        SharedPreferencesUtils.get(this, encryptData.getAlias());
+
+        mTv2.setText(encryptData.getEncryptString());
         mTv3.setText(decryptStr);
     }
 }

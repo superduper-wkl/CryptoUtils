@@ -34,8 +34,6 @@ public class CryptoUtils {
 
     private KeyStore keyStore;
 
-    private IvParameterSpec iv;
-
     private CryptoUtils(KeyStore keyStore) {
         this.keyStore = keyStore;
     }
@@ -52,7 +50,6 @@ public class CryptoUtils {
             initKey(keyStore, file);
 
             CryptoUtils crypto = new CryptoUtils(keyStore);
-            crypto.iv = new IvParameterSpec(initIV(context));
 
             return crypto;
         } catch (Exception e) {
@@ -61,16 +58,16 @@ public class CryptoUtils {
         }
     }
 
-    private static byte[] initIV(Context context) {
-        byte[] ivData = SharedPreferencesUtils.getIVData(context);
-        if (ivData == null || ivData.length == 0) {
-            byte[] bytes = generateSeed();
-            ivData = new byte[16];
-            System.arraycopy(bytes, 0, ivData, 0, 16);
-            SharedPreferencesUtils.saveIVData(context, ivData);
-        }
-        return ivData;
-    }
+//    private static byte[] initIV(Context context) {
+//        byte[] ivData = SharedPreferencesUtils.getIVData(context);
+//        if (ivData == null || ivData.length == 0) {
+//            byte[] bytes = generateSeed();
+//            ivData = new byte[16];
+//            System.arraycopy(bytes, 0, ivData, 0, 16);
+//            SharedPreferencesUtils.saveIVData(context, ivData);
+//        }
+//        return ivData;
+//    }
 
     private static void initKey(KeyStore keyStore, File file) throws Exception {
         if (!keyStore.containsAlias(DEFAULT_SECRETKEY_NAME)) { // 秘钥不存在，则生成秘钥
@@ -115,9 +112,14 @@ public class CryptoUtils {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 
             if (!file.exists()) {
-                file.createNewFile();
+                boolean isSuccess = file.createNewFile();
+
+                if (!isSuccess) {
+                    throw new SecurityException("创建内部存储文件失败");
+                }
+
                 keyStore.load(null, null);
-            } else if (file.length() <= 0){
+            } else if (file.length() <= 0) {
                 keyStore.load(null, null);
             } else {
                 FileInputStream fis = null;
@@ -154,16 +156,17 @@ public class CryptoUtils {
         } else {
             keyGenerator = KeyGenerator.getInstance("AES");
             SecureRandom secureRandom;
-            if (android.os.Build.VERSION.SDK_INT >= 24) {
-                secureRandom = SecureRandom.getInstance("SHA1PRNG", new CryptoProvider());
-            } else if (android.os.Build.VERSION.SDK_INT >= 17) {
+//            if (android.os.Build.VERSION.SDK_INT >= 24) {
+//                secureRandom = SecureRandom.getInstance("SHA1PRNG", new CryptoProvider());
+//            } else
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
                 secureRandom = SecureRandom.getInstance("SHA1PRNG", "Crypto");
             } else {
                 secureRandom = SecureRandom.getInstance("SHA1PRNG");
             }
             secureRandom.setSeed(generateSeed());
             keyGenerator.init(128, secureRandom);
-//        }
+        }
 
         return keyGenerator;
     }
@@ -190,13 +193,15 @@ public class CryptoUtils {
      * @param content
      * @return
      */
-    public String aesEncrypt(String content) {
+    public EncryptData aesEncrypt(String alias, String content) {
         try {
             SecretKey secretKey = getSecretKey(keyStore);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] bytes = cipher.doFinal(StringUtils.string2Bytes(content));
-            return Base64.encodeToString(bytes, Base64.DEFAULT);
+            byte[] iv = cipher.getIV();
+            String encryptString = Base64.encodeToString(bytes, Base64.DEFAULT);
+            return new EncryptData(alias, encryptString, iv);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -206,15 +211,16 @@ public class CryptoUtils {
     /**
      * AES解密
      *
-     * @param encryptString
+     * @param encryptData
      * @return
      */
-    public String aesDecrypt(String encryptString) {
+    public String aesDecrypt(EncryptData encryptData) {
         try {
             SecretKey secretKey = getSecretKey(keyStore);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-            byte[] bytes = cipher.doFinal(Base64.decode(encryptString, Base64.DEFAULT));
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(encryptData.getIv()));
+            byte[] bytes = cipher.doFinal(Base64.decode(encryptData.getEncryptString()
+                    , Base64.DEFAULT));
             return StringUtils.bytes2String(bytes);
         } catch (Exception e) {
             e.printStackTrace();
