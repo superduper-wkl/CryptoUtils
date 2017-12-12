@@ -199,7 +199,7 @@ public class CryptoUtils {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] bytes = cipher.doFinal(StringUtils.string2Bytes(content));
             byte[] iv = cipher.getIV();
-            String encryptString = Base64.encodeToString(bytes, Base64.DEFAULT);
+            String encryptString = Base64.encodeToString(bytes, Base64.NO_WRAP);
             return new EncryptData(alias, encryptString, iv);
         } catch (Exception e) {
             e.printStackTrace();
@@ -219,7 +219,7 @@ public class CryptoUtils {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(encryptData.getIv()));
             byte[] bytes = cipher.doFinal(Base64.decode(encryptData.getEncryptString()
-                    , Base64.DEFAULT));
+                    , Base64.NO_WRAP));
             return StringUtils.bytes2String(bytes);
         } catch (Exception e) {
             e.printStackTrace();

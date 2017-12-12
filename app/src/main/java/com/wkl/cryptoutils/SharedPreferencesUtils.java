@@ -23,7 +23,7 @@ public class SharedPreferencesUtils {
 //    public static void saveIVData(Context context, byte[] iv) {
 //        SharedPreferences preferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
 //        SharedPreferences.Editor edit = preferences.edit();
-//        edit.putString(IV_KEY_NAME, Base64.encodeToString(iv, Base64.DEFAULT));
+//        edit.putString(IV_KEY_NAME, Base64.encodeToString(iv, Base64.NO_WRAP));
 //        edit.apply();
 //    }
 //
@@ -33,7 +33,7 @@ public class SharedPreferencesUtils {
 //        if (TextUtils.isEmpty(string)) {
 //            return null;
 //        }
-//        return Base64.decode(string, Base64.DEFAULT);
+//        return Base64.decode(string, Base64.NO_WRAP);
 //    }
 
     /**
@@ -81,7 +81,7 @@ public class SharedPreferencesUtils {
         try {
             objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(object);
-            String string = new String(Base64.encode(byteArrayOutputStream.toByteArray(), Base64.DEFAULT));
+            String string = new String(Base64.encode(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP));
             objectOutputStream.close();
             return string;
         } catch (IOException e) {
@@ -97,7 +97,7 @@ public class SharedPreferencesUtils {
      * @return object      解密后的object
      */
     private static Object String2Object(String objectString) {
-        byte[] mobileBytes = Base64.decode(objectString.getBytes(), Base64.DEFAULT);
+        byte[] mobileBytes = Base64.decode(objectString.getBytes(), Base64.NO_WRAP);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(mobileBytes);
         ObjectInputStream objectInputStream = null;
         try {
